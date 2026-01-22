@@ -18,13 +18,8 @@ export default function TrainerLayout() {
           backgroundColor: theme.colors.background,
           borderTopColor: theme.colors.border,
         },
-        headerStyle: {
-          backgroundColor: theme.colors.background,
-        },
-        headerTintColor: theme.colors.text,
-        headerTitleStyle: {
-          fontWeight: '600',
-        },
+               headerShown: false,
+
       }}
     >
       <Tabs.Screen

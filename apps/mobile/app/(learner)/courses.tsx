@@ -1,3 +1,5 @@
+import { demoCourseService, isDemoMode } from '@/services/demoService';
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
@@ -7,7 +9,6 @@ import { AppText, Card, Input } from '../../components/ui';
 import { useI18n } from '../../contexts/I18nContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { Course, supabase } from '../../lib/supabase';
-import { demoCourseService, isDemoMode } from '@/services/demoService';
 
 export default function CoursesScreen() {
   const { theme } = useTheme();
@@ -77,6 +78,13 @@ export default function CoursesScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={styles.content}>
         <View style={styles.header}>
+          <Image
+            source={require('../../assets/images/logo.png')}
+            style={styles.logo}
+
+
+
+          />
           <AppText variant="h2" color="text">
             {t('nav.courses')}
           </AppText>
@@ -121,10 +129,15 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 16,
+    padding: 16 ,
   },
   header: {
     marginBottom: 24,
+  },
+  logo: {
+    width: 240,
+    height: 70,    marginBottom: 16,
+    alignSelf: 'center',
   },
   listContent: {
     paddingBottom: 20,

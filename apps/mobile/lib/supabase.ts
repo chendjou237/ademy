@@ -13,68 +13,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 });
 
-// Database types
-export interface Profile {
-  id: string;
-  email: string;
-  full_name?: string;
-  role: 'trainer' | 'learner';
-  avatar_url?: string;
-  bio?: string;
-  phone_number?: string;
-  mobile_money_provider?: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface Course {
-  id: string;
-  trainer_id: string;
-  title: string;
-  description?: string;
-  thumbnail_url?: string;
-  price: number;
-  category?: string;
-  level?: 'beginner' | 'intermediate' | 'advanced';
-  is_published: boolean;
-  created_at: string;
-  updated_at: string;
-  profiles?: Profile;
-  lessons?: Lesson[];
-  enrollments?: Enrollment[];
-}
-
-export interface Lesson {
-  id: string;
-  course_id: string;
-  title: string;
-  description?: string;
-  video_url?: string;
-  bunny_video_id?: string;
-  bunny_library_id?: string;
-  video_status?: string;
-  thumbnail_url?: string;
-  duration_minutes?: number;
-  order_index: number;
-  is_free: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface Enrollment {
-  id: string;
-  learner_id: string;
-  course_id: string;
-  enrolled_at: string;
-  progress: number;
-  course?: Course;
-  lesson_progress?: LessonProgress[];
-}
-
-export interface LessonProgress {
-  id: string;
-  enrollment_id: string;
-  lesson_id: string;
-  completed: boolean;
-  completed_at?: string;
-}
+// Re-export types from shared package
+export type {
+    Course, CourseLevel, Enrollment, Lesson, LessonProgress, Profile, UserRole, VideoStatus
+} from '@repo/types';

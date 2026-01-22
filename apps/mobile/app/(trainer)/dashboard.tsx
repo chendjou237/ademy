@@ -1,3 +1,5 @@
+import { demoStatsService, isDemoMode } from '@/services/demoService';
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
@@ -8,7 +10,6 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useI18n } from '../../contexts/I18nContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { supabase } from '../../lib/supabase';
-import { demoStatsService, isDemoMode } from '@/services/demoService';
 
 interface DashboardStats {
   totalCourses: number;
@@ -118,6 +119,11 @@ export default function TrainerDashboardScreen() {
         }
       >
         <View style={styles.header}>
+          <Image
+            source={require('../../assets/images/logo.png')}
+            style={styles.logo}
+            contentFit="contain"
+          />
           <AppText variant="h2" color="text">
             {t('nav.dashboard')}
           </AppText>
@@ -212,6 +218,11 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: 24,
+  },
+  logo: {
+       width: 240,
+    height: 70,    marginBottom: 16,
+    alignSelf: 'center',
   },
   statsGrid: {
     flexDirection: 'row',

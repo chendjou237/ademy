@@ -5,6 +5,7 @@ import type React from "react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { ImageUpload } from "@/components/ui/image-upload"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -26,6 +27,7 @@ export function CreateCourseForm({ userId }: CreateCourseFormProps) {
   const [category, setCategory] = useState("")
   const [level, setLevel] = useState("beginner")
   const [price, setPrice] = useState("0")
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
@@ -45,6 +47,7 @@ export function CreateCourseForm({ userId }: CreateCourseFormProps) {
           category,
           level,
           price: Number.parseFloat(price),
+          thumbnail_url: thumbnailUrl,
           is_published: false,
         })
         .select()
@@ -99,6 +102,14 @@ export function CreateCourseForm({ userId }: CreateCourseFormProps) {
               disabled={loading}
             />
           </div>
+
+          <ImageUpload
+            value={thumbnailUrl}
+            onChange={setThumbnailUrl}
+            disabled={loading}
+            label="Course Thumbnail"
+            description="Upload a course thumbnail (recommended: 800x450px, max 2MB)"
+          />
 
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">

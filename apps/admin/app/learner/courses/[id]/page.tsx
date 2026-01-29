@@ -130,7 +130,6 @@ export default async function LearnerCoursePage({ params }: { params: { id: stri
           <div className="lg:col-span-2 space-y-6">
             {lessons.map((lesson: any) => {
               const isCompleted = lessonProgress?.some((lp) => lp.lesson_id === lesson.id && lp.completed)
-              const progressRecord = lessonProgress?.find((lp) => lp.lesson_id === lesson.id)
 
               return (
                 <div key={lesson.id} id={`lesson-${lesson.id}`}>
@@ -138,7 +137,6 @@ export default async function LearnerCoursePage({ params }: { params: { id: stri
                     lesson={lesson}
                     enrollmentId={enrollment.id}
                     isCompleted={isCompleted || false}
-                    progressId={progressRecord?.id}
                   />
                 </div>
               )

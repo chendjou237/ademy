@@ -139,12 +139,17 @@ export default function LessonViewerScreen() {
         // Use Supabase
         const { error: progressError } = await supabase
           .from('lesson_progress')
-          .upsert({
-            enrollment_id: enrollment.id,
-            lesson_id: lesson.id,
-            completed: true,
-            completed_at: new Date().toISOString(),
-          });
+          .upsert(
+            {
+              enrollment_id: enrollment.id,
+              lesson_id: lesson.id,
+              completed: true,
+              completed_at: new Date().toISOString(),
+            },
+            {
+              onConflict: 'enrollment_id,lesson_id',
+            }
+          );
 
         if (progressError) {
           console.error('Error marking lesson complete:', progressError);
@@ -165,17 +170,24 @@ export default function LessonViewerScreen() {
           .eq('completed', true);
 
         const totalLessons = allLessons?.length || 0;
-        const completedCount = (completedLessons?.length || 0) + (isCompleted ? 0 : 1);
+        const completedCount = completedLessons?.length || 0;
         const progressPercentage = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
 
-        await supabase
+        const { error: enrollmentError } = await supabase
           .from('enrollments')
           .update({ progress: progressPercentage })
           .eq('id', enrollment.id);
+
+        if (enrollmentError) {
+          console.error('Error updating enrollment progress:', enrollmentError);
+        }
       }
 
       setIsCompleted(true);
       Alert.alert('Félicitations!', 'Leçon marquée comme terminée');
+
+      // Refresh the lesson data to get updated progress
+      await fetchLessonData();
     } catch (error) {
       console.error('Error marking lesson complete:', error);
       Alert.alert('Erreur', 'Une erreur est survenue');

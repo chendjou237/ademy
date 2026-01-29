@@ -1,8 +1,8 @@
+import { demoAuthService, isDemoMode } from '@/services/demoService';
 import { Session, User } from '@supabase/supabase-js';
 import { router } from 'expo-router';
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { Profile, supabase } from '../lib/supabase';
-import { demoAuthService, isDemoMode } from '@/services/demoService';
 
 interface AuthContextType {
   user: User | null;
@@ -48,14 +48,51 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         error = result.error;
       }
 
+
       if (error) {
         console.error('Error fetching profile:', error);
-        console.error('Error details:', JSON.stringify(error, null, 2));
 
         if (error.code === 'PGRST116') {
-          console.log('Profile not found - this is normal for new users');
+          console.log('Profile not found - creating default profile for user');
+
+          // Get user data from auth to create profile
+          const { data: { user } } = await supabase.auth.getUser();
+
+          if (user) {
+            // Create a default profile
+            const { data: newProfile, error: createError } = await supabase
+              .from('profiles')
+              .insert({
+                id: userId,
+                email: user.email!,
+                full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
+                role: user.user_metadata?.role || 'learner',
+              })
+              .select()
+              .single();
+
+            if (createError) {
+              console.error('Error creating profile:', createError);
+              setProfile(null);
+            } else {
+              console.log('Profile created successfully:', newProfile);
+              setProfile(newProfile);
+
+              // Navigate based on role
+              if (newProfile?.role === 'trainer') {
+                console.log('Profile loaded: Trainer -> Dashboard');
+                router.replace('/(trainer)/dashboard');
+              } else if (newProfile?.role === 'learner') {
+                console.log('Profile loaded: Learner -> Courses');
+                router.replace('/(learner)/courses');
+              }
+            }
+          } else {
+            setProfile(null);
+          }
+        } else {
+          setProfile(null);
         }
-        setProfile(null);
       } else {
         console.log('Profile fetched successfully:', data);
         console.log('Profile role:', data?.role);

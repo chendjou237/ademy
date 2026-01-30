@@ -1,4 +1,5 @@
-import * as FileSystem from 'expo-file-system';
+import { File } from 'expo-file-system';
+import { fetch as expoFetch } from 'expo/fetch';
 
 const BUNNY_LIBRARY_ID = process.env.EXPO_PUBLIC_BUNNY_LIBRARY_ID || '527238';
 const BUNNY_API_KEY = process.env.EXPO_PUBLIC_BUNNY_API_KEY || 'd6b587a5-f170-4207-9c42d7251f42-909d-4439';
@@ -62,15 +63,22 @@ export const uploadVideoToBunny = async (
   try {
     const uploadUrl = `${BUNNY_BASE_URL}/library/${BUNNY_LIBRARY_ID}/videos/${videoId}`;
 
-    const uploadResult = await FileSystem.uploadAsync(uploadUrl, videoUri, {
-      httpMethod: 'PUT',
+    // Read the video file as binary data
+    const file = new File(videoUri);
+    const videoData = await file.arrayBuffer();
+
+    // Upload using expo/fetch with binary data as body
+    const response = await expoFetch(uploadUrl, {
+      method: 'PUT',
       headers: {
         'AccessKey': BUNNY_API_KEY,
-        'Content-Type': 'video/mp4',
+        'Accept': 'application/json',
       },
+      body: videoData,
     });
 
-    return uploadResult.status === 200;
+    console.log('Upload result:', response.status);
+    return response.status === 200;
   } catch (error) {
     console.error('Error uploading video to Bunny:', error);
     return false;

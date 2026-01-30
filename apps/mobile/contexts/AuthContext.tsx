@@ -261,20 +261,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return { error };
     }
 
-    // Create profile record
-    if (data.user) {
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: data.user.id,
-          email: data.user.email!,
-          full_name: fullName,
-          role: role,
-        });
+    // Wait a moment for the trigger to fire
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-      if (profileError) {
-        console.error('Error creating profile:', profileError);
-        return { error: profileError };
+    // Verify profile was created by trigger, if not create it as fallback
+    if (data.user) {
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', data.user.id)
+        .single();
+
+      if (!existingProfile) {
+        console.log('Trigger did not create profile, creating manually as fallback');
+
+        // Use upsert to avoid duplicate key errors
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .upsert({
+            id: data.user.id,
+            email: data.user.email!,
+            full_name: fullName,
+            role: role,
+          }, {
+            onConflict: 'id'
+          });
+
+        if (profileError) {
+          console.error('Error creating profile fallback:', profileError);
+          return { error: profileError };
+        }
       }
     }
 

@@ -8,29 +8,39 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 export async function POST(request: NextRequest) {
   try {
-    // Get auth token from Authorization header
+    // Try to get auth from cookie first (web app), then from header (mobile app)
+    let supabase;
+
+    // Check if we have Authorization header (mobile app)
     const authHeader = request.headers.get('authorization');
-    const token = authHeader?.replace('Bearer ', '');
 
-    if (!token) {
-      return NextResponse.json(
-        { error: 'Unauthorized - No token provided' },
-        { status: 401 }
-      );
-    }
+    if (authHeader) {
+      // Mobile app - use Bearer token
+      const token = authHeader.replace('Bearer ', '');
 
-    // Create Supabase client with the provided token
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        global: {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
+      if (!token) {
+        return NextResponse.json(
+          { error: 'Unauthorized - No token provided' },
+          { status: 401 }
+        );
       }
-    );
+
+      supabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          global: {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        }
+      );
+    } else {
+      // Web app - use cookie-based auth
+      const { createClient: createServerClient } = await import('@/lib/supabase/server');
+      supabase = await createServerClient();
+    }
 
     // Check authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser();

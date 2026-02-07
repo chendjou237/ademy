@@ -2,11 +2,12 @@
 
 ## Architecture Overview
 
-Payment processing is **centralized in the admin app** (Next.js). The mobile app calls admin API endpoints instead of directly integrating with PayUnit. This provides:
+Payment processing is **centralized in the admin app** (Next.js). Both the mobile app and web app use the same admin API endpoints for payment processing. This provides:
 - Centralized payment logic and security
 - Easier credential management (server-side only)
-- Consistent payment handling across platforms
-- Simplified mobile app implementation
+- Consistent payment handling across platforms (web + mobile)
+- Simplified client implementation
+- Single source of truth for payment status
 
 ## Payment Flow
 
@@ -51,6 +52,12 @@ Server-side PayUnit integration:
 - `POST /api/payments/complete` - Complete enrollment after payment
 - `POST /api/payments/webhook` - Handle PayUnit webhooks
 
+#### Web Components
+- `components/courses/payment-modal.tsx` - Payment modal with iframe
+- `components/courses/enroll-button.tsx` - Enrollment button with payment support
+- Automatic status polling every 3 seconds
+- Auto-closes modal on payment success
+
 ### Mobile App (`apps/mobile`)
 
 #### services/payunitService.ts
@@ -65,6 +72,8 @@ Modal WebView component for payment page:
 - Displays PayUnit hosted payment page
 - Monitors navigation for completion/cancellation
 - Handles success, error, and cancel callbacks
+- Automatic status polling every 3 seconds
+- Auto-closes on payment success
 s enrollments, set after payment)
 - amount: NUMERIC (payment amount in XAF)
 - currency: TEXT (default: 'XAF')
@@ -246,11 +255,74 @@ const accountBalance = Math.floor(totalRevenue * 0.7);
 
 ### When Adding Payment Features
 1. **Always check course price** before showing payment UI
-2. **Call admin API** - mobile app never calls PayUnit directly
+2. **Call admin API** - clients (web/mobile) never call PayUnit directly
 3. **Use authentication** - include Supabase auth token in requests
 4. **Handle all states**: pending, success, failed, cancelled
 5. **Update both tables**: payment_transactions AND enrollments
 6. **Validate on server** - admin API validates all requests
+7. **Auto-poll status** - check every 3 seconds for completion
+8. **Auto-close UI** - close modal/webview when payment succeeds
+
+### Web App: Free Course Enrollment
+```typescript
+if (course.price === 0) {
+  // Direct enrollment, no payment
+  await supabase.from('enrollments').insert({
+    learner_id: user.id,
+    course_id: courseId,
+    payment_status: 'FREE'
+  });
+}
+```
+
+### Web App: Paid Course Enrollment
+```typescript
+if (course.price > 0) {
+  // Initialize payment via admin API
+  const response = await fetch('/api/payments/initialize', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({
+      amount: course.price,
+      courseId,
+      trainerId,
+      returnUrl: window.location.origin + '/courses/' + courseId,
+    }),
+  });
+
+  const result = await response.json();
+
+  // Show PaymentModal with payment URL
+  setPaymentUrl(result.data.transaction_url);
+  setTransactionId(result.data.transaction_id);
+  setShowPayment(true);
+}
+```
+
+### Web App: After Payment Completion
+```typescript
+// Payment modal auto-detects success via polling
+const handlePaymentSuccess = async (transactionId: string) => {
+  setShowPayment(false);
+
+  // Complete enrollment via admin API
+  const response = await fetch('/api/payments/complete', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({
+      transactionId,
+      courseId,
+    }),
+  });
+
+  // Redirect to dashboard
+  router.push('/learner/dashboard');
+};
+```
 
 ### Mobile App: Free Course Enrollment
 ```typescript

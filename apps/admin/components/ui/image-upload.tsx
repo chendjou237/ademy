@@ -21,7 +21,7 @@ export function ImageUpload({
   value,
   onChange,
   disabled = false,
-  bucket = "course-thumbnails",
+  bucket = "ademy",
   folder = "thumbnails",
   label = "Thumbnail",
   description = "Upload a course thumbnail (recommended: 800x450px, max 2MB)",

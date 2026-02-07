@@ -155,7 +155,7 @@ export async function checkPaymentStatus(
 ): Promise<PaymentStatusResponse> {
   try {
     const response = await fetch(
-      `${PAYUNIT_BASE_URL}/gateway/paymentstatus?transaction_id=${transactionId}`,
+      `${PAYUNIT_BASE_URL}/gateway/paymentstatus/${transactionId}`,
       {
         method: 'GET',
         headers: getHeaders(),

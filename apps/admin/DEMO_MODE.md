@@ -214,7 +214,7 @@ Demo mode uses public test videos from Google's test video repository:
 When ready to use real data:
 
 1. Set `DEMO_MODE = false` in `lib/demo/data.ts`
-2. Configure Supabase credentials in `.env.local`
+2. Configure Supabase credentials in `.env`
 3. Run database migrations
 4. Update components to use Supabase instead of demo services
 5. Test thoroughly with real data

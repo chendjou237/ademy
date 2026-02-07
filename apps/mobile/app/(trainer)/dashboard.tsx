@@ -72,15 +72,25 @@ export default function TrainerDashboardScreen() {
           return;
         }
 
+        // Fetch payment transactions for accurate revenue tracking
+        const { data: transactions, error: transactionsError } = await supabase
+          .from('payment_transactions')
+          .select('amount, status')
+          .eq('trainer_id', user.id)
+          .eq('status', 'SUCCESS');
+
+        if (transactionsError) {
+          console.error('Error fetching transactions:', transactionsError);
+        }
+
         const totalCourses = courses?.length || 0;
         const publishedCourses = courses?.filter(c => c.is_published).length || 0;
         const totalStudents = enrollments?.length || 0;
-        const totalRevenue = enrollments?.reduce((sum, e) => {
-          const coursePrice = (e as any).course?.price || 0;
-          return sum + coursePrice;
-        }, 0) || 0;
+        
+        // Calculate revenue from successful payment transactions
+        const totalRevenue = transactions?.reduce((sum, tx) => sum + tx.amount, 0) || 0;
 
-        // For now, account balance is 70% of total revenue (assuming 30% platform fee)
+        // Account balance is 70% of total revenue (30% platform fee)
         const accountBalance = Math.floor(totalRevenue * 0.7);
 
         setStats({

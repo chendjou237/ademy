@@ -19,6 +19,16 @@ export type CourseLevel = 'beginner' | 'intermediate' | 'advanced';
 export type VideoStatus = 'queued' | 'processing' | 'encoding' | 'finished' | 'failed';
 
 /**
+ * Payment status types
+ */
+export type PaymentStatus = 'FREE' | 'PENDING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
+
+/**
+ * Payment transaction status
+ */
+export type TransactionStatus = 'PENDING' | 'SUCCESS' | 'FAILED' | 'CANCELLED';
+
+/**
  * User Profile
  */
 export interface Profile {
@@ -87,10 +97,13 @@ export interface Enrollment {
   course_id: string;
   enrolled_at: string;
   progress: number;
+  payment_transaction_id?: string;
+  payment_status: PaymentStatus;
   // Relations
   course?: Course;
   learner?: Profile;
   lesson_progress?: LessonProgress[];
+  payment_transaction?: PaymentTransaction;
 }
 
 /**
@@ -108,6 +121,31 @@ export interface LessonProgress {
 }
 
 /**
+ * Payment Transaction
+ */
+export interface PaymentTransaction {
+  id: string;
+  enrollment_id?: string;
+  course_id: string;
+  learner_id: string;
+  trainer_id: string;
+  transaction_id: string;
+  amount: number;
+  currency: string;
+  status: TransactionStatus;
+  payment_method?: string;
+  payunit_transaction_url?: string;
+  payunit_response?: any;
+  created_at: string;
+  updated_at: string;
+  // Relations
+  course?: Course;
+  learner?: Profile;
+  trainer?: Profile;
+  enrollment?: Enrollment;
+}
+
+/**
  * Database Tables
  * Type-safe table names
  */
@@ -117,6 +155,7 @@ export const Tables = {
   LESSONS: 'lessons',
   ENROLLMENTS: 'enrollments',
   LESSON_PROGRESS: 'lesson_progress',
+  PAYMENT_TRANSACTIONS: 'payment_transactions',
 } as const;
 
 export type TableName = typeof Tables[keyof typeof Tables];

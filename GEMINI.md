@@ -372,7 +372,7 @@ EXPO_PUBLIC_BUNNY_LIBRARY_ID=your_library_id
 EXPO_PUBLIC_BUNNY_API_KEY=your_api_key
 ```
 
-#### Web App (apps/admin/.env.local)
+#### Web App (apps/admin/.env)
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url

@@ -1,9 +1,0 @@
-{
-  "buildCommand": "npm build",
-  "installCommand": "npm install",
-  "framework": null,
-  "outputDirectory": "apps/admin/.next",
-  "env": {
-    "ENABLE_EXPERIMENTAL_COREPACK": "1"
-  }
-}

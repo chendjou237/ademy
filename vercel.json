@@ -1,6 +1,9 @@
 {
-  "buildCommand": "cd apps/admin && pnpm build",
-  "installCommand": "pnpm install --no-frozen-lockfile",
+  "buildCommand": "npm build",
+  "installCommand": "npm install",
   "framework": null,
-  "outputDirectory": "apps/admin/.next"
+  "outputDirectory": "apps/admin/.next",
+  "env": {
+    "ENABLE_EXPERIMENTAL_COREPACK": "1"
+  }
 }

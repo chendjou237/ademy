@@ -9,6 +9,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+    transpilePackages: ["@repo/types","@repo/eslint-config", "@repo/typescript-config" ],
 }
 
 export default nextConfig

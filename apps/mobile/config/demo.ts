@@ -1,6 +1,6 @@
 // Demo/Mock Data Configuration
 // Set to true to use mock data instead of real Supabase data
-export const DEMO_MODE = true;
+export const DEMO_MODE = false;
 
 // Mock User Data
 export const DEMO_USERS = {

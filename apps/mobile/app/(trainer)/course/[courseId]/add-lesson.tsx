@@ -1,4 +1,4 @@
-import * as DocumentPicker from 'expo-document-picker';
+import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, View } from 'react-native';
@@ -20,7 +20,7 @@ export default function AddLessonScreen() {
     duration_minutes: '',
     is_free: false,
   });
-  const [videoFile, setVideoFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
+  const [videoFile, setVideoFile] = useState<ImagePicker.ImagePickerAsset | null>(null);
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadStatus, setUploadStatus] = useState<string>('');
@@ -31,16 +31,25 @@ export default function AddLessonScreen() {
 
   const pickVideo = async () => {
     try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: 'video/*',
-        copyToCacheDirectory: true,
+      // Request permissions
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (status !== 'granted') {
+        Alert.alert('Permission requise', 'Nous avons besoin de la permission pour accéder à vos vidéos');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+        allowsEditing: false,
+        quality: 1,
       });
 
       if (!result.canceled && result.assets[0]) {
         const asset = result.assets[0];
 
-        // Check file size (limit to 500MB)
-        if (asset.size && asset.size > 500 * 1024 * 1024) {
+        // Check file size (limit to 500MB) - Note: fileSize might not be available on all platforms
+        if (asset.fileSize && asset.fileSize > 500 * 1024 * 1024) {
           Alert.alert('Erreur', 'La vidéo ne peut pas dépasser 500MB');
           return;
         }
@@ -223,10 +232,10 @@ export default function AddLessonScreen() {
               <Card padding="md" style={{ backgroundColor: theme.colors.surfaceLight }}>
                 <View style={styles.videoInfo}>
                   <AppText variant="bodySmall" color="text">
-                    {videoFile.name}
+                    {videoFile.fileName || 'Vidéo sélectionnée'}
                   </AppText>
                   <AppText variant="caption" color="textLight">
-                    {videoFile.size ? `${(videoFile.size / (1024 * 1024)).toFixed(1)} MB` : 'Taille inconnue'}
+                    {videoFile.fileSize ? `${(videoFile.fileSize / (1024 * 1024)).toFixed(1)} MB` : videoFile.duration ? `${Math.round(videoFile.duration)}s` : 'Taille inconnue'}
                   </AppText>
                 </View>
                 <Button

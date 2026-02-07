@@ -5,6 +5,7 @@ import type React from "react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { ImageUpload } from "@/components/ui/image-upload"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -22,6 +23,7 @@ interface Course {
   category: string | null
   level: string | null
   price: number
+  thumbnail_url: string | null
   is_published: boolean
 }
 
@@ -37,6 +39,7 @@ export function EditCourseForm({ course }: EditCourseFormProps) {
   const [category, setCategory] = useState(course.category || "")
   const [level, setLevel] = useState(course.level || "beginner")
   const [price, setPrice] = useState(course.price.toString())
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(course.thumbnail_url)
   const [isPublished, setIsPublished] = useState(course.is_published)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState(false)
@@ -58,6 +61,7 @@ export function EditCourseForm({ course }: EditCourseFormProps) {
           category,
           level,
           price: Number.parseFloat(price),
+          thumbnail_url: thumbnailUrl,
           is_published: isPublished,
         })
         .eq("id", course.id)
@@ -111,6 +115,14 @@ export function EditCourseForm({ course }: EditCourseFormProps) {
               disabled={loading}
             />
           </div>
+
+          <ImageUpload
+            value={thumbnailUrl}
+            onChange={setThumbnailUrl}
+            disabled={loading}
+            label="Course Thumbnail"
+            description="Upload a course thumbnail (recommended: 800x450px, max 2MB)"
+          />
 
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">

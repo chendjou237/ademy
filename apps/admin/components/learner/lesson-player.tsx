@@ -24,10 +24,9 @@ interface LessonPlayerProps {
   lesson: Lesson
   enrollmentId: string
   isCompleted: boolean
-  progressId?: string
 }
 
-export function LessonPlayer({ lesson, enrollmentId, isCompleted, progressId }: LessonPlayerProps) {
+export function LessonPlayer({ lesson, enrollmentId, isCompleted }: LessonPlayerProps) {
   const { t } = useTranslation()
   const router = useRouter()
   const [completed, setCompleted] = useState(isCompleted)
@@ -38,23 +37,24 @@ export function LessonPlayer({ lesson, enrollmentId, isCompleted, progressId }: 
     try {
       const supabase = createClient()
 
-      if (checked && !progressId) {
-        // Create new progress record
-        await supabase.from("lesson_progress").insert({
-          enrollment_id: enrollmentId,
-          lesson_id: lesson.id,
-          completed: true,
-          completed_at: new Date().toISOString(),
-        })
-      } else if (progressId) {
-        // Update existing progress record
-        await supabase
-          .from("lesson_progress")
-          .update({
+      // Use upsert to handle both insert and update cases
+      const { error } = await supabase
+        .from("lesson_progress")
+        .upsert(
+          {
+            enrollment_id: enrollmentId,
+            lesson_id: lesson.id,
             completed: checked,
             completed_at: checked ? new Date().toISOString() : null,
-          })
-          .eq("id", progressId)
+          },
+          {
+            onConflict: "enrollment_id,lesson_id",
+          }
+        )
+
+      if (error) {
+        console.error("[v0] Error updating lesson progress:", error)
+        return
       }
 
       setCompleted(checked)

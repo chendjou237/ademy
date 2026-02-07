@@ -60,7 +60,7 @@ export default function CreateCourseScreen() {
 
       const fileName = `course-thumbnails/${Date.now()}.jpg`;
       const { data, error } = await supabase.storage
-        .from('course-assets')
+        .from('ademy')
         .upload(fileName, blob);
 
       if (error) {

@@ -208,7 +208,12 @@ export default async function CoursePage({ params }: { params: { id: string } })
                     <Link href="/learner/dashboard">Go to My Courses</Link>
                   </Button>
                 ) : user ? (
-                  <EnrollButton courseId={course.id} userId={user.id} />
+                  <EnrollButton
+                    courseId={course.id}
+                    userId={user.id}
+                    coursePrice={course.price}
+                    trainerId={course.trainer_id}
+                  />
                 ) : (
                   <Button className="w-full" asChild>
                     <Link href={`/auth/login?redirect=/courses/${course.id}`}>Sign In to Enroll</Link>

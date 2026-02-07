@@ -4,11 +4,13 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Alert, FlatList, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LessonCard } from '../../../components/LessonCard';
+import { PaymentWebView } from '../../../components/PaymentWebView';
 import { AppText, Badge, Button, Card } from '../../../components/ui';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useI18n } from '../../../contexts/I18nContext';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { Course, Enrollment, Lesson, supabase } from '../../../lib/supabase';
+import { completeEnrollmentAfterPayment, initializePayment } from '../../../services/payunitService';
 
 export default function CourseDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -21,6 +23,9 @@ export default function CourseDetailScreen() {
   const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
   const [loading, setLoading] = useState(true);
   const [enrolling, setEnrolling] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
+  const [paymentUrl, setPaymentUrl] = useState('');
+  const [currentTransactionId, setCurrentTransactionId] = useState('');
 
   useEffect(() => {
     if (id && user) {
@@ -112,44 +117,110 @@ export default function CourseDetailScreen() {
     }
   }, [id, user]);
 
+  const handlePaymentSuccess = async (transactionId: string) => {
+    setShowPayment(false);
+    setEnrolling(true);
+
+    try {
+      // Complete enrollment after successful payment via admin API
+      const enrollment = await completeEnrollmentAfterPayment(
+        transactionId,
+        course!.id
+      );
+
+      setEnrollment(enrollment);
+      Alert.alert(
+        'Paiement réussi!',
+        'Votre inscription au cours a été confirmée. Vous pouvez maintenant accéder à toutes les leçons.',
+        [
+          {
+            text: 'OK',
+            onPress: () => fetchCourseDetails(),
+          },
+        ]
+      );
+    } catch (error) {
+      console.error('Error completing enrollment:', error);
+      Alert.alert(
+        'Erreur',
+        'Le paiement a été effectué mais nous n\'avons pas pu confirmer votre inscription. Veuillez contacter le support.'
+      );
+    } finally {
+      setEnrolling(false);
+    }
+  };
+
+  const handlePaymentCancel = () => {
+    setShowPayment(false);
+    Alert.alert(
+      'Paiement annulé',
+      'Vous avez annulé le paiement. Vous pouvez réessayer quand vous le souhaitez.'
+    );
+  };
+
+  const handlePaymentError = (error: string) => {
+    setShowPayment(false);
+    Alert.alert(
+      'Erreur de paiement',
+      error || 'Une erreur est survenue lors du paiement. Veuillez réessayer.'
+    );
+  };
+
   const handleEnroll = async () => {
     if (!course || !user) return;
 
     setEnrolling(true);
 
     try {
-      let data: any, error: any;
+      // Check if course is paid
+      if (course.price > 0 && !isDemoMode()) {
+        // Initialize payment for paid course via admin API
+        const paymentResponse = await initializePayment(
+          course.price,
+          course.id,
+          course.trainer_id
+        );
 
-      if (isDemoMode()) {
-        // Use demo service
-        const result = await demoEnrollmentService.enrollInCourse(user.id, course.id);
-        data = result.data;
-        error = result.error;
+        // Store transaction ID and payment URL
+        setCurrentTransactionId(paymentResponse.data.transaction_id);
+        setPaymentUrl(paymentResponse.data.transaction_url);
+        setShowPayment(true);
       } else {
-        // Use Supabase
-        const result = await supabase
-          .from('enrollments')
-          .insert({
-            learner_id: user.id,
-            course_id: course.id,
-            progress: 0,
-          })
-          .select(`
-            *,
-            lesson_progress(*)
-          `)
-          .single();
+        // Free course or demo mode - enroll directly
+        let data: any, error: any;
 
-        data = result.data;
-        error = result.error;
-      }
+        if (isDemoMode()) {
+          // Use demo service
+          const result = await demoEnrollmentService.enrollInCourse(user.id, course.id);
+          data = result.data;
+          error = result.error;
+        } else {
+          // Use Supabase
+          const result = await supabase
+            .from('enrollments')
+            .insert({
+              learner_id: user.id,
+              course_id: course.id,
+              progress: 0,
+              payment_status: 'FREE',
+            })
+            .select(`
+              *,
+              lesson_progress(*)
+            `)
+            .single();
 
-      if (error) {
-        console.error('Error enrolling:', error);
-        Alert.alert('Erreur', 'Impossible de s\'inscrire au cours');
-      } else {
-        setEnrollment(data);
-        Alert.alert('Succès', 'Inscription réussie! Vous pouvez maintenant accéder à toutes les leçons.');
+          data = result.data;
+          error = result.error;
+        }
+
+        if (error) {
+          console.error('Error enrolling:', error);
+          Alert.alert('Erreur', 'Impossible de s\'inscrire au cours');
+        } else {
+          setEnrollment(data);
+          Alert.alert('Succès', 'Inscription réussie! Vous pouvez maintenant accéder à toutes les leçons.');
+        }
       }
     } catch (error) {
       console.error('Error enrolling:', error);
@@ -342,6 +413,16 @@ export default function CourseDetailScreen() {
           </Card>
         )}
       </ScrollView>
+
+      {/* Payment WebView Modal */}
+      <PaymentWebView
+        visible={showPayment}
+        paymentUrl={paymentUrl}
+        transactionId={currentTransactionId}
+        onSuccess={handlePaymentSuccess}
+        onCancel={handlePaymentCancel}
+        onError={handlePaymentError}
+      />
     </SafeAreaView>
   );
 }

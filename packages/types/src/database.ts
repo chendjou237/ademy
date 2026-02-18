@@ -29,6 +29,11 @@ export type PaymentStatus = 'FREE' | 'PENDING' | 'COMPLETED' | 'FAILED' | 'CANCE
 export type TransactionStatus = 'PENDING' | 'SUCCESS' | 'FAILED' | 'CANCELLED';
 
 /**
+ * Cashout request status
+ */
+export type CashoutStatus = 'PENDING' | 'APPROVED' | 'PAID' | 'REJECTED' | 'CANCELLED';
+
+/**
  * User Profile
  */
 export interface Profile {
@@ -146,6 +151,27 @@ export interface PaymentTransaction {
 }
 
 /**
+ * Cashout Request
+ */
+export interface CashoutRequest {
+  id: string;
+  trainer_id: string;
+  amount: number;
+  currency: string;
+  status: CashoutStatus;
+  provider?: string;
+  phone_number?: string;
+  note?: string;
+  created_at: string;
+  updated_at: string;
+  processed_at?: string;
+  processed_by?: string;
+  // Relations
+  trainer?: Profile;
+  processed_by_profile?: Profile;
+}
+
+/**
  * Database Tables
  * Type-safe table names
  */
@@ -156,6 +182,7 @@ export const Tables = {
   ENROLLMENTS: 'enrollments',
   LESSON_PROGRESS: 'lesson_progress',
   PAYMENT_TRANSACTIONS: 'payment_transactions',
+  CASHOUT_REQUESTS: 'cashout_requests',
 } as const;
 
 export type TableName = typeof Tables[keyof typeof Tables];

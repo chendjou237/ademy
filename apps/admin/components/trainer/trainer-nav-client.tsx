@@ -26,6 +26,9 @@ export function TrainerNavClient() {
       <Link href="/trainer/dashboard">
         <Button variant="ghost">{t("nav.dashboard")}</Button>
       </Link>
+      <Link href="/trainer/cashout">
+        <Button variant="ghost">{t("nav.cashout")}</Button>
+      </Link>
       <Link href="/courses">
         <Button variant="ghost">{t("nav.courses")}</Button>
       </Link>

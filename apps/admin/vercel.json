@@ -1,0 +1,6 @@
+{
+  "buildCommand": "next build --webpack",
+  "env": {
+    "NEXT_USE_TURBOPACK": "0"
+  }
+}

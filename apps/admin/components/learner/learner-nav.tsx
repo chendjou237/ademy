@@ -2,6 +2,7 @@ import { BookOpen } from "lucide-react"
 import Link from "next/link"
 import { LearnerNavClient } from "./learner-nav-client"
 import Image from 'next/image'
+import { LearnerBottomNav } from "@/components/pwa/bottom-nav"
 
 export async function LearnerNav() {
   return (
@@ -22,6 +23,7 @@ export async function LearnerNav() {
           <LearnerNavClient />
         </nav>
       </div>
+      <LearnerBottomNav />
     </header>
   )
 }

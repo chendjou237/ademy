@@ -237,6 +237,8 @@ export const translations = {
     "offline.title": "You are offline",
     "offline.description": "We can’t reach Ademy right now. Check your connection and try again.",
     "offline.retry": "Retry",
+    "pwa.installHint": "Install the Ademy dashboard on your phone for quick access.",
+    "pwa.installButton": "Install on your phone",
 
     // Pages
     "page.browseCourses": "Browse Courses",
@@ -487,6 +489,8 @@ export const translations = {
     "offline.title": "Vous êtes hors ligne",
     "offline.description": "Impossible de joindre Ademy. Vérifiez votre connexion et réessayez.",
     "offline.retry": "Réessayer",
+    "pwa.installHint": "Installez le tableau de bord Ademy sur votre téléphone.",
+    "pwa.installButton": "Installer sur votre téléphone",
 
     // Pages
     "page.browseCourses": "Parcourir les cours",

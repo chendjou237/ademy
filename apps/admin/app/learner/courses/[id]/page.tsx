@@ -57,7 +57,7 @@ export default async function LearnerCoursePage({ params }: { params: { id: stri
     <div className="min-h-screen bg-background">
       <LearnerNav />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 pb-20">
         {/* Course Header */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-4">

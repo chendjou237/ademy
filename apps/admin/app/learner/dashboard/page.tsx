@@ -89,7 +89,7 @@ export default async function LearnerDashboardPage() {
     <div className="min-h-screen bg-background">
       <LearnerNav />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 pb-20">
         <div className="mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">My Learning</h1>
           <p className="text-muted-foreground">Track your progress and continue learning</p>
@@ -158,6 +158,14 @@ export default async function LearnerDashboardPage() {
             </div>
           </CardHeader>
           <CardContent>
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-muted-foreground">Install Ademy on your phone for quick access.</p>
+              <Link href="/pwa/install">
+                <Button variant="outline" className="w-full sm:w-auto">
+                  Install on your phone
+                </Button>
+              </Link>
+            </div>
             {enrollmentsWithProgress && enrollmentsWithProgress.length > 0 ? (
               <div className="space-y-4">
                 {enrollmentsWithProgress.map((enrollment) => {

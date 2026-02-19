@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { TrainerNavClient } from "./trainer-nav-client"
 import Image from "next/image"
+import { TrainerBottomNav } from "@/components/pwa/bottom-nav"
 
 export async function TrainerNav() {
   return (
@@ -22,6 +23,7 @@ export async function TrainerNav() {
           <TrainerNavClient />
         </nav>
       </div>
+      <TrainerBottomNav />
     </header>
   )
 }

@@ -3,7 +3,7 @@ export default function manifest() {
     name: "Ademy",
     short_name: "Ademy",
     description: "Ademy admin dashboard",
-    start_url: "/",
+    start_url: "/dashboard",
     display: "standalone",
     background_color: "#ffffff",
     theme_color: "#0f172a",

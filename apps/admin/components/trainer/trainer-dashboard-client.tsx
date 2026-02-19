@@ -36,7 +36,7 @@ export function TrainerDashboardClient({
   const { t } = useTranslation()
 
   return (
-    <main className="container mx-auto px-4 py-8">
+    <main className="container mx-auto px-4 py-8 pb-20">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">{t("trainer.dashboard")}</h1>
@@ -115,13 +115,21 @@ export function TrainerDashboardClient({
       </div>
 
       {/* Courses List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("trainer.yourCourses")}</CardTitle>
-          <CardDescription>{t("trainer.manageContent")}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {courses && courses.length > 0 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("trainer.yourCourses")}</CardTitle>
+            <CardDescription>{t("trainer.manageContent")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-muted-foreground">{t("pwa.installHint")}</p>
+              <Link href="/pwa/install">
+                <Button variant="outline" className="w-full sm:w-auto">
+                  {t("pwa.installButton")}
+                </Button>
+              </Link>
+            </div>
+            {courses && courses.length > 0 ? (
             <div className="space-y-4">
               {courses.map((course) => (
                 <div

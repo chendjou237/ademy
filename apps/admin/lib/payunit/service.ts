@@ -9,7 +9,7 @@ import { createClient } from '@supabase/supabase-js';
 const PAYUNIT_BASE_URL = 'https://gateway.payunit.net/api';
 const PAYUNIT_API_USERNAME = process.env.PAYUNIT_API_USERNAME || '';
 const PAYUNIT_API_PASSWORD = process.env.PAYUNIT_API_PASSWORD || '';
-const PAYUNIT_API_KEY = process.env.PAYUNIT_SANDBOX_API_KEY || '';
+const PAYUNIT_API_KEY = process.env.PAYUNIT_API_KEY || '';
 const PAYUNIT_MODE = process.env.PAYUNIT_MODE || 'test';
 
 

@@ -19,6 +19,9 @@ interface TrainerDashboardClientProps {
   totalCourses: number
   publishedCourses: number
   totalStudents: number
+  totalRevenue: number
+  accountBalance: number
+  growthPercent: number
 }
 
 export function TrainerDashboardClient({
@@ -26,18 +29,21 @@ export function TrainerDashboardClient({
   totalCourses,
   publishedCourses,
   totalStudents,
+  totalRevenue,
+  accountBalance,
+  growthPercent,
 }: TrainerDashboardClientProps) {
   const { t } = useTranslation()
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">{t("trainer.dashboard")}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">{t("trainer.dashboard")}</h1>
           <p className="text-muted-foreground">{t("trainer.manageCourses")}</p>
         </div>
         <Link href="/trainer/courses/new">
-          <Button size="lg">
+          <Button size="lg" className="w-full sm:w-auto">
             <Plus className="mr-2 h-5 w-5" />
             {t("trainer.createCourse")}
           </Button>
@@ -54,7 +60,7 @@ export function TrainerDashboardClient({
             <BookOpen className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">{totalCourses}</div>
+            <div className="text-2xl sm:text-3xl font-bold text-foreground">{totalCourses}</div>
             <p className="text-xs text-muted-foreground mt-1">
               {publishedCourses} {t("trainer.published_count")}
             </p>
@@ -69,7 +75,7 @@ export function TrainerDashboardClient({
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">{totalStudents}</div>
+            <div className="text-2xl sm:text-3xl font-bold text-foreground">{totalStudents}</div>
             <p className="text-xs text-muted-foreground mt-1">{t("trainer.acrossAllCourses")}</p>
           </CardContent>
         </Card>
@@ -82,8 +88,12 @@ export function TrainerDashboardClient({
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">0 XAF</div>
-            <p className="text-xs text-muted-foreground mt-1">{t("trainer.comingSoon")}</p>
+            <div className="text-2xl sm:text-3xl font-bold text-foreground">
+              {totalRevenue.toLocaleString()} XAF
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {t("trainer.availableBalance")} {accountBalance.toLocaleString()} XAF
+            </p>
           </CardContent>
         </Card>
 
@@ -95,7 +105,10 @@ export function TrainerDashboardClient({
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">+0%</div>
+            <div className="text-2xl sm:text-3xl font-bold text-foreground">
+              {growthPercent >= 0 ? "+" : ""}
+              {growthPercent}%
+            </div>
             <p className="text-xs text-muted-foreground mt-1">{t("trainer.thisMonth")}</p>
           </CardContent>
         </Card>
@@ -113,14 +126,14 @@ export function TrainerDashboardClient({
               {courses.map((course) => (
                 <div
                   key={course.id}
-                  className="flex items-center justify-between border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+                  className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex-1">
                     <h3 className="font-semibold text-foreground mb-1">{course.title}</h3>
                     <p className="text-sm text-muted-foreground line-clamp-1">
                       {course.description || t("trainer.noDescription")}
                     </p>
-                    <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-2 mt-2 text-xs text-muted-foreground">
                       <span>
                         {course.lessons?.[0]?.count || 0} {t("common.lessons")}
                       </span>
@@ -131,7 +144,9 @@ export function TrainerDashboardClient({
                     </div>
                   </div>
                   <Link href={`/trainer/courses/${course.id}`}>
-                    <Button variant="outline">{t("trainer.editCourse")}</Button>
+                    <Button variant="outline" className="w-full sm:w-auto">
+                      {t("trainer.editCourse")}
+                    </Button>
                   </Link>
                 </div>
               ))}

@@ -21,7 +21,11 @@ export default async function LearnerDashboardPage() {
   const { data: enrollments } = await supabase
     .from("enrollments")
     .select(`
-      *,
+      id,
+      learner_id,
+      course_id,
+      progress,
+      enrolled_at,
       courses(
         *,
         lessons(count),
@@ -31,9 +35,55 @@ export default async function LearnerDashboardPage() {
     .eq("learner_id", user.id)
     .order("enrolled_at", { ascending: false })
 
-  const totalCourses = enrollments?.length || 0
-  const completedCourses = enrollments?.filter((e) => e.progress === 100).length || 0
-  const inProgressCourses = enrollments?.filter((e) => e.progress > 0 && e.progress < 100).length || 0
+  const enrollmentIds = enrollments?.map((enrollment) => enrollment.id) || []
+  const { data: progressRows } = enrollmentIds.length
+    ? await supabase
+        .from("lesson_progress")
+        .select("enrollment_id, completed, completed_at")
+        .in("enrollment_id", enrollmentIds)
+    : { data: [] }
+
+  const completedByEnrollment = new Map<string, number>()
+  for (const row of progressRows || []) {
+    if (!row.completed) continue
+    completedByEnrollment.set(row.enrollment_id, (completedByEnrollment.get(row.enrollment_id) || 0) + 1)
+  }
+
+  const completionDays = new Set<string>()
+  for (const row of progressRows || []) {
+    if (!row.completed || !row.completed_at) continue
+    const day = new Date(row.completed_at)
+    const key = `${day.getUTCFullYear()}-${day.getUTCMonth() + 1}-${day.getUTCDate()}`
+    completionDays.add(key)
+  }
+
+  let learningStreak = 0
+  if (completionDays.size > 0) {
+    let cursor = new Date()
+    for (;;) {
+      const key = `${cursor.getUTCFullYear()}-${cursor.getUTCMonth() + 1}-${cursor.getUTCDate()}`
+      if (!completionDays.has(key)) break
+      learningStreak += 1
+      cursor = new Date(Date.UTC(cursor.getUTCFullYear(), cursor.getUTCMonth(), cursor.getUTCDate() - 1))
+    }
+  }
+
+  const enrollmentsWithProgress = (enrollments || []).map((enrollment) => {
+    const lessonCount = enrollment.courses?.lessons?.[0]?.count || 0
+    const completedCount = completedByEnrollment.get(enrollment.id) || 0
+    const computedProgress = lessonCount > 0 ? Math.round((completedCount / lessonCount) * 100) : 0
+    const storedProgress = typeof enrollment.progress === "number" ? enrollment.progress : 0
+    const progress = storedProgress > 0 ? storedProgress : computedProgress
+
+    return {
+      ...enrollment,
+      progress,
+    }
+  })
+
+  const totalCourses = enrollmentsWithProgress.length || 0
+  const completedCourses = enrollmentsWithProgress.filter((e) => e.progress === 100).length || 0
+  const inProgressCourses = enrollmentsWithProgress.filter((e) => e.progress > 0 && e.progress < 100).length || 0
 
   return (
     <div className="min-h-screen bg-background">
@@ -41,7 +91,7 @@ export default async function LearnerDashboardPage() {
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">My Learning</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">My Learning</h1>
           <p className="text-muted-foreground">Track your progress and continue learning</p>
         </div>
 
@@ -53,7 +103,7 @@ export default async function LearnerDashboardPage() {
               <BookOpen className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">{totalCourses}</div>
+              <div className="text-2xl sm:text-3xl font-bold text-foreground">{totalCourses}</div>
               <p className="text-xs text-muted-foreground mt-1">Total enrollments</p>
             </CardContent>
           </Card>
@@ -64,7 +114,7 @@ export default async function LearnerDashboardPage() {
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">{inProgressCourses}</div>
+              <div className="text-2xl sm:text-3xl font-bold text-foreground">{inProgressCourses}</div>
               <p className="text-xs text-muted-foreground mt-1">Currently learning</p>
             </CardContent>
           </Card>
@@ -75,7 +125,7 @@ export default async function LearnerDashboardPage() {
               <Award className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">{completedCourses}</div>
+              <div className="text-2xl sm:text-3xl font-bold text-foreground">{completedCourses}</div>
               <p className="text-xs text-muted-foreground mt-1">Courses finished</p>
             </CardContent>
           </Card>
@@ -86,7 +136,7 @@ export default async function LearnerDashboardPage() {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">0</div>
+              <div className="text-2xl sm:text-3xl font-bold text-foreground">{learningStreak}</div>
               <p className="text-xs text-muted-foreground mt-1">Days in a row</p>
             </CardContent>
           </Card>
@@ -95,27 +145,29 @@ export default async function LearnerDashboardPage() {
         {/* Enrolled Courses */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <CardTitle>My Courses</CardTitle>
                 <CardDescription>Continue where you left off</CardDescription>
               </div>
               <Link href="/courses">
-                <Button variant="outline">Browse More Courses</Button>
+                <Button variant="outline" className="w-full sm:w-auto">
+                  Browse More Courses
+                </Button>
               </Link>
             </div>
           </CardHeader>
           <CardContent>
-            {enrollments && enrollments.length > 0 ? (
+            {enrollmentsWithProgress && enrollmentsWithProgress.length > 0 ? (
               <div className="space-y-4">
-                {enrollments.map((enrollment) => {
+                {enrollmentsWithProgress.map((enrollment) => {
                   const course = enrollment.courses
                   if (!course) return null
 
                   return (
                     <Link key={enrollment.id} href={`/learner/courses/${course.id}`}>
-                      <div className="flex items-start gap-4 border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer">
-                        <div className="aspect-video w-48 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer">
+                        <div className="aspect-video w-full sm:w-48 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-lg flex items-center justify-center flex-shrink-0">
                           <BookOpen className="h-12 w-12 text-primary/40" />
                         </div>
 
@@ -125,7 +177,7 @@ export default async function LearnerDashboardPage() {
                             {course.description || "No description"}
                           </p>
 
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mb-3">
                             <span>{course.profiles?.full_name || "Anonymous"}</span>
                             <span>•</span>
                             <span>{course.lessons?.[0]?.count || 0} lessons</span>
@@ -140,7 +192,9 @@ export default async function LearnerDashboardPage() {
                           </div>
                         </div>
 
-                        <Button variant="outline">{enrollment.progress === 0 ? "Start Course" : "Continue"}</Button>
+                        <Button variant="outline" className="w-full sm:w-auto">
+                          {enrollment.progress === 0 ? "Start Course" : "Continue"}
+                        </Button>
                       </div>
                     </Link>
                   )

@@ -23,7 +23,7 @@ export async function POST(request: Request) {
 
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .select("id, role, phone_number, mobile_money_provider")
+    .select("id, role")
     .eq("id", user.id)
     .single()
 
@@ -72,8 +72,8 @@ export async function POST(request: Request) {
       amount,
       currency: "XAF",
       status: "PENDING",
-      provider: provider || profile.mobile_money_provider || null,
-      phone_number: phoneNumber || profile.phone_number || null,
+      provider,
+      phone_number: phoneNumber,
       note,
     })
     .select("*")

@@ -6,7 +6,7 @@ export async function TrainerNav() {
   return (
     <header className="border-b border-border bg-card">
       <div className="container mx-auto px-4 py-4">
-        <nav className="flex items-center justify-between">
+        <nav className="relative flex items-center justify-between">
           <Link href="/trainer/dashboard" className="flex items-center gap-2">
           
            <Image

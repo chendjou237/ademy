@@ -1,6 +1,6 @@
 import { LoginForm } from "@/components/auth/login-form"
 import Link from "next/link"
-import { BookOpen } from "lucide-react"
+import Image from "next/image"
 import { Suspense } from "react"
 
 export default function LoginPage() {
@@ -9,10 +9,14 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <Link href="/" className="inline-flex items-center gap-2 mb-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-              <BookOpen className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <span className="text-2xl font-bold text-foreground">Ademy</span>
+            <Image
+              src="/logo.png"
+              alt="Ademy"
+              width={160}
+              height={48}
+              className="h-12 w-auto"
+              priority
+            />
           </Link>
           <h1 className="text-3xl font-bold text-foreground mb-2">Welcome Back</h1>
           <p className="text-muted-foreground">Sign in to your account to continue</p>

@@ -15,7 +15,7 @@ export default async function TrainerCashoutPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, role, phone_number, mobile_money_provider")
+    .select("id, role")
     .eq("id", user.id)
     .single()
 
@@ -51,8 +51,8 @@ export default async function TrainerCashoutPage() {
       <TrainerNav />
       <TrainerCashoutClient
         profile={{
-          phone_number: profile.phone_number || null,
-          mobile_money_provider: profile.mobile_money_provider || null,
+          phone_number: null,
+          mobile_money_provider: null,
         }}
         summary={{
           totalRevenue,

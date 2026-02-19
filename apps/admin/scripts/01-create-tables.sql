@@ -122,6 +122,16 @@ CREATE POLICY "Users can enroll in courses"
   ON public.enrollments FOR INSERT
   WITH CHECK (learner_id = auth.uid());
 
+CREATE POLICY "Trainers can view enrollments for their courses"
+  ON public.enrollments FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.courses
+      WHERE courses.id = enrollments.course_id
+      AND courses.trainer_id = auth.uid()
+    )
+  );
+
 -- Lesson progress policies
 CREATE POLICY "Users can view own lesson progress"
   ON public.lesson_progress FOR SELECT

@@ -1,10 +1,12 @@
 import { EnrollButton } from "@/components/courses/enroll-button"
+import { ShareCourseButton } from "@/components/courses/share-course-button"
 import { PublicNav } from "@/components/public-nav"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { createClient } from "@/lib/supabase/server"
 import { BookOpen, Clock, Lock, PlayCircle, Users } from "lucide-react"
+import Image from "next/image"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 
@@ -186,8 +188,18 @@ export default async function CoursePage({ params }: { params: { id: string } })
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <Card className="sticky top-8">
-              <div className="aspect-video bg-gradient-to-br from-primary/20 to-secondary/20 rounded-t-lg flex items-center justify-center">
-                <BookOpen className="h-20 w-20 text-primary/40" />
+              <div className="aspect-video rounded-t-lg overflow-hidden bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                {course.thumbnail_url ? (
+                  <Image
+                    src={course.thumbnail_url}
+                    alt={course.title}
+                    width={800}
+                    height={450}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <BookOpen className="h-20 w-20 text-primary/40" />
+                )}
               </div>
 
               <CardContent className="p-6">
@@ -219,6 +231,10 @@ export default async function CoursePage({ params }: { params: { id: string } })
                     <Link href={`/auth/login?redirect=/courses/${course.id}`}>Sign In to Enroll</Link>
                   </Button>
                 )}
+
+                <div className="mt-3">
+                  <ShareCourseButton title={course.title} courseId={course.id} className="w-full" />
+                </div>
 
                 <div className="mt-6 space-y-3 text-sm">
                   <div className="flex items-center justify-between">

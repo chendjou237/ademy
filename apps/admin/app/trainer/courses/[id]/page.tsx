@@ -4,6 +4,7 @@ import { TrainerNav } from "@/components/trainer/trainer-nav"
 import { EditCourseForm } from "@/components/trainer/edit-course-form"
 import { LessonsList } from "@/components/trainer/lessons-list"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ShareCourseButton } from "@/components/courses/share-course-button"
 
 export default async function EditCoursePage({ params }: { params: { id: string } }) {
   const supabase = await createClient()
@@ -41,9 +42,12 @@ export default async function EditCoursePage({ params }: { params: { id: string 
       <TrainerNav />
 
       <main className="container mx-auto px-4 py-8 max-w-5xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">{course.title}</h1>
-          <p className="text-muted-foreground">Edit your course details and manage lessons</p>
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground mb-2">{course.title}</h1>
+            <p className="text-muted-foreground">Edit your course details and manage lessons</p>
+          </div>
+          <ShareCourseButton title={course.title} courseId={course.id} className="w-full sm:w-auto" />
         </div>
 
         <Tabs defaultValue="details" className="w-full">

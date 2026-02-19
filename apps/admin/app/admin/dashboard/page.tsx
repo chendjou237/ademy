@@ -2,7 +2,7 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { AdminNav } from "@/components/admin/admin-nav"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users, BookOpen, GraduationCap, TrendingUp } from "lucide-react"
+import { Users, BookOpen, GraduationCap, TrendingUp, Wallet } from "lucide-react"
 
 export default async function AdminDashboardPage() {
   const supabase = await createClient()
@@ -43,13 +43,18 @@ export default async function AdminDashboardPage() {
     .select("*", { count: "exact", head: true })
     .eq("role", "learner")
 
+  const { count: pendingCashouts } = await supabase
+    .from("cashout_requests")
+    .select("*", { count: "exact", head: true })
+    .in("status", ["PENDING", "APPROVED"])
+
   return (
     <div className="min-h-screen bg-background">
       <AdminNav />
 
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Admin Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Admin Dashboard</h1>
           <p className="text-muted-foreground">Monitor and manage the Ademy platform</p>
         </div>
 
@@ -61,7 +66,7 @@ export default async function AdminDashboardPage() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">{totalUsers || 0}</div>
+              <div className="text-2xl sm:text-3xl font-bold text-foreground">{totalUsers || 0}</div>
               <p className="text-xs text-muted-foreground mt-1">
                 {trainers || 0} trainers, {learners || 0} learners
               </p>
@@ -74,7 +79,7 @@ export default async function AdminDashboardPage() {
               <BookOpen className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">{totalCourses || 0}</div>
+              <div className="text-2xl sm:text-3xl font-bold text-foreground">{totalCourses || 0}</div>
               <p className="text-xs text-muted-foreground mt-1">{publishedCourses || 0} published</p>
             </CardContent>
           </Card>
@@ -85,7 +90,7 @@ export default async function AdminDashboardPage() {
               <GraduationCap className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">{totalEnrollments || 0}</div>
+              <div className="text-2xl sm:text-3xl font-bold text-foreground">{totalEnrollments || 0}</div>
               <p className="text-xs text-muted-foreground mt-1">Active learners</p>
             </CardContent>
           </Card>
@@ -96,8 +101,19 @@ export default async function AdminDashboardPage() {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-foreground">+0%</div>
+              <div className="text-2xl sm:text-3xl font-bold text-foreground">+0%</div>
               <p className="text-xs text-muted-foreground mt-1">This month</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Pending Cashouts</CardTitle>
+              <Wallet className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl sm:text-3xl font-bold text-foreground">{pendingCashouts || 0}</div>
+              <p className="text-xs text-muted-foreground mt-1">Needs review</p>
             </CardContent>
           </Card>
         </div>
@@ -111,7 +127,7 @@ export default async function AdminDashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 border border-border rounded-lg">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-4 border border-border rounded-lg">
                   <div>
                     <p className="text-sm font-medium text-foreground">Active Trainers</p>
                     <p className="text-xs text-muted-foreground">Creating content</p>
@@ -119,7 +135,7 @@ export default async function AdminDashboardPage() {
                   <div className="text-2xl font-bold text-primary">{trainers || 0}</div>
                 </div>
 
-                <div className="flex items-center justify-between p-4 border border-border rounded-lg">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-4 border border-border rounded-lg">
                   <div>
                     <p className="text-sm font-medium text-foreground">Active Learners</p>
                     <p className="text-xs text-muted-foreground">Taking courses</p>
@@ -127,7 +143,7 @@ export default async function AdminDashboardPage() {
                   <div className="text-2xl font-bold text-secondary">{learners || 0}</div>
                 </div>
 
-                <div className="flex items-center justify-between p-4 border border-border rounded-lg">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-4 border border-border rounded-lg">
                   <div>
                     <p className="text-sm font-medium text-foreground">Published Courses</p>
                     <p className="text-xs text-muted-foreground">Available to learners</p>
@@ -135,7 +151,7 @@ export default async function AdminDashboardPage() {
                   <div className="text-2xl font-bold text-primary">{publishedCourses || 0}</div>
                 </div>
 
-                <div className="flex items-center justify-between p-4 border border-border rounded-lg">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-4 border border-border rounded-lg">
                   <div>
                     <p className="text-sm font-medium text-foreground">Total Enrollments</p>
                     <p className="text-xs text-muted-foreground">Course registrations</p>
@@ -156,7 +172,7 @@ export default async function AdminDashboardPage() {
               <div className="space-y-3">
                 <a
                   href="/admin/users"
-                  className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
+                  className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
@@ -171,7 +187,7 @@ export default async function AdminDashboardPage() {
 
                 <a
                   href="/admin/courses"
-                  className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
+                  className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary/10">
@@ -186,7 +202,7 @@ export default async function AdminDashboardPage() {
 
                 <a
                   href="/admin/enrollments"
-                  className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
+                  className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
@@ -195,6 +211,21 @@ export default async function AdminDashboardPage() {
                     <div>
                       <p className="text-sm font-medium text-foreground">View Enrollments</p>
                       <p className="text-xs text-muted-foreground">Track student progress</p>
+                    </div>
+                  </div>
+                </a>
+
+                <a
+                  href="/admin/cashouts"
+                  className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary/10">
+                      <Wallet className="h-5 w-5 text-secondary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Review Cashouts</p>
+                      <p className="text-xs text-muted-foreground">Approve trainer payouts</p>
                     </div>
                   </div>
                 </a>

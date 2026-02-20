@@ -11,7 +11,8 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-    transpilePackages: ["@repo/types","@repo/eslint-config", "@repo/typescript-config" ],
+  transpilePackages: ["@repo/types", "@repo/eslint-config", "@repo/typescript-config"],
+  turbopack: {},
 }
 const buildId = process.env.NEXT_PUBLIC_APP_VERSION || process.env.VERCEL_GIT_COMMIT_SHA || "dev"
 

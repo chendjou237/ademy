@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server"
 import { TrainerNav } from "@/components/trainer/trainer-nav"
 import { EditCourseForm } from "@/components/trainer/edit-course-form"
 import { LessonsList } from "@/components/trainer/lessons-list"
+import { QuizzesList } from "@/components/trainer/quizzes-list"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ShareCourseButton } from "@/components/courses/share-course-button"
 
@@ -37,6 +38,12 @@ export default async function EditCoursePage({ params }: { params: { id: string 
     .eq("course_id", id)
     .order("order_index", { ascending: true })
 
+  const { data: quizzes } = await supabase
+    .from("quizzes")
+    .select("*, lessons(title), quiz_questions(count), quiz_attempts(count)")
+    .eq("course_id", id)
+    .order("created_at", { ascending: false })
+
   return (
     <div className="min-h-screen bg-background">
       <TrainerNav />
@@ -51,9 +58,10 @@ export default async function EditCoursePage({ params }: { params: { id: string 
         </div>
 
         <Tabs defaultValue="details" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 max-w-md">
+          <TabsList className="grid w-full grid-cols-3 max-w-xl">
             <TabsTrigger value="details">Course Details</TabsTrigger>
             <TabsTrigger value="lessons">Lessons</TabsTrigger>
+            <TabsTrigger value="quizzes">Quizzes</TabsTrigger>
           </TabsList>
 
           <TabsContent value="details" className="mt-6">
@@ -62,6 +70,14 @@ export default async function EditCoursePage({ params }: { params: { id: string 
 
           <TabsContent value="lessons" className="mt-6">
             <LessonsList courseId={id} lessons={lessons || []} />
+          </TabsContent>
+
+          <TabsContent value="quizzes" className="mt-6">
+            <QuizzesList
+              courseId={id}
+              lessons={(lessons || []).map((lesson) => ({ id: lesson.id, title: lesson.title }))}
+              quizzes={quizzes || []}
+            />
           </TabsContent>
         </Tabs>
       </main>

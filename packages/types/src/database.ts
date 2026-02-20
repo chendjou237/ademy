@@ -18,6 +18,8 @@ export type CourseLevel = 'beginner' | 'intermediate' | 'advanced';
  */
 export type VideoStatus = 'queued' | 'processing' | 'encoding' | 'finished' | 'failed';
 
+export type QuizQuestionType = 'single' | 'multiple' | 'true_false';
+
 /**
  * Payment status types
  */
@@ -91,6 +93,51 @@ export interface Lesson {
   updated_at: string;
   // Relations
   course?: Course;
+}
+
+export interface Quiz {
+  id: string;
+  course_id: string;
+  lesson_id?: string | null;
+  title: string;
+  instructions?: string;
+  pass_percent: number;
+  time_limit_minutes?: number | null;
+  is_published: boolean;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface QuizQuestion {
+  id: string;
+  quiz_id: string;
+  type: QuizQuestionType;
+  prompt: string;
+  options?: any;
+  correct_answer?: any;
+  points: number;
+  order_index: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface QuizAttempt {
+  id: string;
+  quiz_id: string;
+  learner_id: string;
+  score: number;
+  total_points: number;
+  passed: boolean;
+  submitted_at: string;
+}
+
+export interface QuizAnswer {
+  id: string;
+  attempt_id: string;
+  question_id: string;
+  answer?: any;
+  is_correct: boolean;
 }
 
 /**
@@ -179,6 +226,10 @@ export const Tables = {
   PROFILES: 'profiles',
   COURSES: 'courses',
   LESSONS: 'lessons',
+  QUIZZES: 'quizzes',
+  QUIZ_QUESTIONS: 'quiz_questions',
+  QUIZ_ATTEMPTS: 'quiz_attempts',
+  QUIZ_ANSWERS: 'quiz_answers',
   ENROLLMENTS: 'enrollments',
   LESSON_PROGRESS: 'lesson_progress',
   PAYMENT_TRANSACTIONS: 'payment_transactions',

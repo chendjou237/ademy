@@ -1,5 +1,6 @@
 import { LearnerNav } from "@/components/learner/learner-nav"
 import { LessonPlayer } from "@/components/learner/lesson-player"
+import { QuizTaker } from "@/components/learner/quiz-taker"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -48,6 +49,30 @@ export default async function LearnerCoursePage({ params }: { params: { id: stri
 
   // Get lesson progress
   const { data: lessonProgress } = await supabase.from("lesson_progress").select("*").eq("enrollment_id", enrollment.id)
+
+  const { data: quizzes } = await supabase
+    .from("quizzes")
+    .select("id, title, instructions, pass_percent, time_limit_minutes, lesson_id, quiz_questions(id, type, prompt, options, points)")
+    .eq("course_id", id)
+    .eq("is_published", true)
+
+  const { data: quizAttempts } = await supabase
+    .from("quiz_attempts")
+    .select("id, quiz_id, score, total_points, passed, submitted_at")
+    .eq("learner_id", user.id)
+
+  const attemptsByQuiz = new Map<string, any[]>()
+  for (const attempt of quizAttempts || []) {
+    const list = attemptsByQuiz.get(attempt.quiz_id) || []
+    list.push(attempt)
+    attemptsByQuiz.set(attempt.quiz_id, list)
+  }
+  const latestAttemptByQuiz = new Map(
+    Array.from(attemptsByQuiz.entries()).map(([quizId, attempts]) => [
+      quizId,
+      attempts.sort((a, b) => new Date(b.submitted_at).getTime() - new Date(a.submitted_at).getTime())[0],
+    ])
+  )
 
   const lessons = course.lessons?.sort((a: any, b: any) => a.order_index - b.order_index) || []
   const completedLessons = lessonProgress?.filter((lp) => lp.completed).length || 0
@@ -130,6 +155,7 @@ export default async function LearnerCoursePage({ params }: { params: { id: stri
           <div className="lg:col-span-2 space-y-6">
             {lessons.map((lesson: any) => {
               const isCompleted = lessonProgress?.some((lp) => lp.lesson_id === lesson.id && lp.completed)
+              const lessonQuizzes = (quizzes || []).filter((quiz) => quiz.lesson_id === lesson.id)
 
               return (
                 <div key={lesson.id} id={`lesson-${lesson.id}`}>
@@ -138,9 +164,51 @@ export default async function LearnerCoursePage({ params }: { params: { id: stri
                     enrollmentId={enrollment.id}
                     isCompleted={isCompleted || false}
                   />
+
+                  {lessonQuizzes.map((quiz) => (
+                    <div key={quiz.id} className="mt-6">
+                      <QuizTaker
+                        quizId={quiz.id}
+                        title={quiz.title}
+                        instructions={quiz.instructions}
+                        passPercent={quiz.pass_percent}
+                        timeLimitMinutes={quiz.time_limit_minutes}
+                        questions={(quiz.quiz_questions || []).map((question: any) => ({
+                          id: question.id,
+                          type: question.type,
+                          prompt: question.prompt,
+                          options: question.options || [],
+                          points: question.points,
+                        }))}
+                        latestAttempt={latestAttemptByQuiz.get(quiz.id) || null}
+                        attempts={attemptsByQuiz.get(quiz.id) || []}
+                      />
+                    </div>
+                  ))}
                 </div>
               )
             })}
+
+            {(quizzes || []).filter((quiz) => !quiz.lesson_id).map((quiz) => (
+              <div key={quiz.id} className="mt-8">
+                <QuizTaker
+                  quizId={quiz.id}
+                  title={quiz.title}
+                  instructions={quiz.instructions}
+                  passPercent={quiz.pass_percent}
+                  timeLimitMinutes={quiz.time_limit_minutes}
+                  questions={(quiz.quiz_questions || []).map((question: any) => ({
+                    id: question.id,
+                    type: question.type,
+                    prompt: question.prompt,
+                    options: question.options || [],
+                    points: question.points,
+                  }))}
+                  latestAttempt={latestAttemptByQuiz.get(quiz.id) || null}
+                  attempts={attemptsByQuiz.get(quiz.id) || []}
+                />
+              </div>
+            ))}
 
             {lessons.length === 0 && (
               <Card>

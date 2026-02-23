@@ -21,6 +21,9 @@ CREATE TABLE IF NOT EXISTS public.courses (
   category TEXT,
   level TEXT CHECK (level IN ('beginner', 'intermediate', 'advanced')),
   is_published BOOLEAN DEFAULT FALSE,
+  certificate_enabled BOOLEAN DEFAULT FALSE,
+  certificate_signature_name TEXT,
+  certificate_signature_title TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

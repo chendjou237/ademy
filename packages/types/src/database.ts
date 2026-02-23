@@ -65,6 +65,9 @@ export interface Course {
   level?: CourseLevel;
   is_published: boolean;
   is_free: boolean;
+  certificate_enabled?: boolean;
+  certificate_signature_name?: string | null;
+  certificate_signature_title?: string | null;
   created_at: string;
   updated_at: string;
   // Relations
@@ -138,6 +141,18 @@ export interface QuizAnswer {
   question_id: string;
   answer?: any;
   is_correct: boolean;
+}
+
+/**
+ * Course Certificate
+ */
+export interface Certificate {
+  id: string;
+  enrollment_id: string;
+  course_id: string;
+  learner_id: string;
+  trainer_id: string;
+  issued_at: string;
 }
 
 /**
@@ -234,6 +249,7 @@ export const Tables = {
   LESSON_PROGRESS: 'lesson_progress',
   PAYMENT_TRANSACTIONS: 'payment_transactions',
   CASHOUT_REQUESTS: 'cashout_requests',
+  CERTIFICATES: 'certificates',
 } as const;
 
 export type TableName = typeof Tables[keyof typeof Tables];

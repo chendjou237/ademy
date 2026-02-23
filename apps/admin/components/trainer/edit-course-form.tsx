@@ -25,6 +25,9 @@ interface Course {
   price: number
   thumbnail_url: string | null
   is_published: boolean
+  certificate_enabled?: boolean | null
+  certificate_signature_name?: string | null
+  certificate_signature_title?: string | null
 }
 
 interface EditCourseFormProps {
@@ -41,6 +44,9 @@ export function EditCourseForm({ course }: EditCourseFormProps) {
   const [price, setPrice] = useState(course.price.toString())
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(course.thumbnail_url)
   const [isPublished, setIsPublished] = useState(course.is_published)
+  const [certificateEnabled, setCertificateEnabled] = useState(Boolean(course.certificate_enabled))
+  const [certificateSignatureName, setCertificateSignatureName] = useState(course.certificate_signature_name || "")
+  const [certificateSignatureTitle, setCertificateSignatureTitle] = useState(course.certificate_signature_title || "")
   const [error, setError] = useState("")
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -63,6 +69,9 @@ export function EditCourseForm({ course }: EditCourseFormProps) {
           price: Number.parseFloat(price),
           thumbnail_url: thumbnailUrl,
           is_published: isPublished,
+          certificate_enabled: certificateEnabled,
+          certificate_signature_name: certificateSignatureName.trim() || null,
+          certificate_signature_title: certificateSignatureTitle.trim() || null,
         })
         .eq("id", course.id)
 
@@ -158,6 +167,44 @@ export function EditCourseForm({ course }: EditCourseFormProps) {
               disabled={loading}
             />
           </div>
+
+          <div className="flex items-center justify-between rounded-lg border border-border p-4">
+            <div className="space-y-0.5">
+              <Label htmlFor="certificate-enabled">Certificate on Completion</Label>
+              <p className="text-sm text-muted-foreground">Issue a completion certificate to learners</p>
+            </div>
+            <Switch
+              id="certificate-enabled"
+              checked={certificateEnabled}
+              onCheckedChange={setCertificateEnabled}
+              disabled={loading}
+            />
+          </div>
+
+          {certificateEnabled ? (
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="certificate-signature-name">Signature Name</Label>
+                <Input
+                  id="certificate-signature-name"
+                  value={certificateSignatureName}
+                  onChange={(e) => setCertificateSignatureName(e.target.value)}
+                  placeholder="e.g., John Doe"
+                  disabled={loading}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="certificate-signature-title">Signature Title</Label>
+                <Input
+                  id="certificate-signature-title"
+                  value={certificateSignatureTitle}
+                  onChange={(e) => setCertificateSignatureTitle(e.target.value)}
+                  placeholder="e.g., Lead Instructor"
+                  disabled={loading}
+                />
+              </div>
+            </div>
+          ) : null}
 
           <div className="flex items-center justify-between rounded-lg border border-border p-4">
             <div className="space-y-0.5">

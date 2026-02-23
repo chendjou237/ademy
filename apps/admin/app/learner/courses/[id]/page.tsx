@@ -2,10 +2,12 @@ import { LearnerNav } from "@/components/learner/learner-nav"
 import { LessonPlayer } from "@/components/learner/lesson-player"
 import { QuizTaker } from "@/components/learner/quiz-taker"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { createClient } from "@/lib/supabase/server"
 import { BookOpen, CheckCircle, Clock } from "lucide-react"
+import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
 
 export default async function LearnerCoursePage({ params }: { params: { id: string } }) {
@@ -37,6 +39,7 @@ export default async function LearnerCoursePage({ params }: { params: { id: stri
     .from("courses")
     .select(`
       *,
+      certificate_enabled,
       profiles!courses_trainer_id_fkey(full_name),
       lessons(*)
     `)
@@ -77,6 +80,7 @@ export default async function LearnerCoursePage({ params }: { params: { id: stri
   const lessons = course.lessons?.sort((a: any, b: any) => a.order_index - b.order_index) || []
   const completedLessons = lessonProgress?.filter((lp) => lp.completed).length || 0
   const progressPercentage = lessons.length > 0 ? Math.round((completedLessons / lessons.length) * 100) : 0
+  const canViewCertificate = course.certificate_enabled && progressPercentage === 100
 
   return (
     <div className="min-h-screen bg-background">
@@ -103,6 +107,13 @@ export default async function LearnerCoursePage({ params }: { params: { id: stri
               </div>
               <Progress value={progressPercentage} className="h-3" />
               <p className="text-xs text-muted-foreground mt-2">{progressPercentage}% complete</p>
+              {canViewCertificate ? (
+                <div className="mt-4">
+                  <Button asChild>
+                    <Link href={`/learner/courses/${id}/certificate`}>View Certificate</Link>
+                  </Button>
+                </div>
+              ) : null}
             </CardContent>
           </Card>
         </div>

@@ -3,7 +3,11 @@ import { TrainerNav } from "@/components/trainer/trainer-nav"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 
-export default async function TrainerDashboardPage() {
+export default async function TrainerDashboardPage({
+  searchParams,
+}: {
+  searchParams?: { course?: string }
+}) {
   const supabase = await createClient()
   const {
     data: { user },
@@ -72,6 +76,22 @@ export default async function TrainerDashboardPage() {
   const growthPercent =
     previousCount === 0 ? (currentCount === 0 ? 0 : 100) : Math.round(((currentCount - previousCount) / previousCount) * 100)
 
+  const selectedCourseId =
+    searchParams?.course && courseIds.includes(searchParams.course) ? searchParams.course : "all"
+
+  let certificatesQuery = supabase
+    .from("certificates")
+    .select("id, issued_at, learner:profiles!certificates_learner_id_fkey(full_name, email), courses(id, title)")
+    .in("course_id", courseIds)
+    .order("issued_at", { ascending: false })
+    .limit(20)
+
+  if (selectedCourseId !== "all") {
+    certificatesQuery = certificatesQuery.eq("course_id", selectedCourseId)
+  }
+
+  const { data: certificates } = courseIds.length ? await certificatesQuery : { data: [] }
+
   return (
     <div className="min-h-screen bg-background">
       <TrainerNav />
@@ -83,6 +103,9 @@ export default async function TrainerDashboardPage() {
         totalRevenue={totalRevenue}
         accountBalance={accountBalance}
         growthPercent={growthPercent}
+        certificates={certificates || []}
+        certificateCourses={(courses || []).map((course) => ({ id: course.id, title: course.title }))}
+        selectedCertificateCourse={selectedCourseId}
       />
     </div>
   )

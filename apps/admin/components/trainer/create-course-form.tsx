@@ -9,6 +9,7 @@ import { ImageUpload } from "@/components/ui/image-upload"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { createClient } from "@/lib/supabase/client"
 import { AlertCircle } from "lucide-react"
@@ -28,6 +29,9 @@ export function CreateCourseForm({ userId }: CreateCourseFormProps) {
   const [level, setLevel] = useState("beginner")
   const [price, setPrice] = useState("0")
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null)
+  const [certificateEnabled, setCertificateEnabled] = useState(false)
+  const [certificateSignatureName, setCertificateSignatureName] = useState("")
+  const [certificateSignatureTitle, setCertificateSignatureTitle] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
@@ -49,6 +53,9 @@ export function CreateCourseForm({ userId }: CreateCourseFormProps) {
           price: Number.parseFloat(price),
           thumbnail_url: thumbnailUrl,
           is_published: false,
+          certificate_enabled: certificateEnabled,
+          certificate_signature_name: certificateSignatureName.trim() || null,
+          certificate_signature_title: certificateSignatureTitle.trim() || null,
         })
         .select()
         .single()
@@ -153,6 +160,44 @@ export function CreateCourseForm({ userId }: CreateCourseFormProps) {
             />
             <p className="text-xs text-muted-foreground">Set to 0 for a free course</p>
           </div>
+
+          <div className="flex items-center justify-between rounded-lg border border-border p-4">
+            <div className="space-y-0.5">
+              <Label htmlFor="certificate-enabled">Certificate on Completion</Label>
+              <p className="text-sm text-muted-foreground">Issue a completion certificate to learners</p>
+            </div>
+            <Switch
+              id="certificate-enabled"
+              checked={certificateEnabled}
+              onCheckedChange={setCertificateEnabled}
+              disabled={loading}
+            />
+          </div>
+
+          {certificateEnabled ? (
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="certificate-signature-name">Signature Name</Label>
+                <Input
+                  id="certificate-signature-name"
+                  value={certificateSignatureName}
+                  onChange={(e) => setCertificateSignatureName(e.target.value)}
+                  placeholder="e.g., John Doe"
+                  disabled={loading}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="certificate-signature-title">Signature Title</Label>
+                <Input
+                  id="certificate-signature-title"
+                  value={certificateSignatureTitle}
+                  onChange={(e) => setCertificateSignatureTitle(e.target.value)}
+                  placeholder="e.g., Lead Instructor"
+                  disabled={loading}
+                />
+              </div>
+            </div>
+          ) : null}
 
           <div className="flex gap-4">
             <Button type="submit" disabled={loading}>

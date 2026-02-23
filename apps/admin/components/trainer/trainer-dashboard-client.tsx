@@ -2,9 +2,11 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useTranslation } from "@/lib/i18n/context"
 import { BookOpen, DollarSign, Plus, TrendingUp, Users } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 
 interface Course {
   id: string
@@ -22,6 +24,14 @@ interface TrainerDashboardClientProps {
   totalRevenue: number
   accountBalance: number
   growthPercent: number
+  certificates: {
+    id: string
+    issued_at: string
+    learner?: { full_name?: string | null; email?: string | null } | null
+    courses?: { title?: string | null } | null
+  }[]
+  certificateCourses: { id: string; title: string }[]
+  selectedCertificateCourse: string
 }
 
 export function TrainerDashboardClient({
@@ -32,8 +42,12 @@ export function TrainerDashboardClient({
   totalRevenue,
   accountBalance,
   growthPercent,
+  certificates,
+  certificateCourses,
+  selectedCertificateCourse,
 }: TrainerDashboardClientProps) {
   const { t } = useTranslation()
+  const router = useRouter()
 
   return (
     <main className="container mx-auto px-4 py-8 pb-20">
@@ -113,6 +127,61 @@ export function TrainerDashboardClient({
           </CardContent>
         </Card>
       </div>
+
+      <Card className="mb-8">
+        <CardHeader>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle>{t("trainer.certificates")}</CardTitle>
+              <CardDescription>{t("trainer.certificatesDesc")}</CardDescription>
+            </div>
+            <Select
+              value={selectedCertificateCourse}
+              onValueChange={(value) =>
+                router.push(value === "all" ? "/trainer/dashboard" : `/trainer/dashboard?course=${value}`)
+              }
+            >
+              <SelectTrigger className="w-full sm:w-56">
+                <SelectValue placeholder={t("trainer.filterByCourse")} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("trainer.allCourses")}</SelectItem>
+                {certificateCourses.map((course) => (
+                  <SelectItem key={course.id} value={course.id}>
+                    {course.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {certificates.length > 0 ? (
+            <div className="space-y-3">
+              {certificates.map((certificate) => {
+                const learnerName = certificate.learner?.full_name || certificate.learner?.email || t("trainer.learner")
+                const courseTitle = certificate.courses?.title || t("trainer.untitledCourse")
+                return (
+                  <div
+                    key={certificate.id}
+                    className="flex flex-col gap-2 rounded-lg border border-border p-4 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div>
+                      <p className="font-medium text-foreground">{learnerName}</p>
+                      <p className="text-sm text-muted-foreground">{courseTitle}</p>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {new Date(certificate.issued_at).toLocaleDateString()}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">{t("trainer.noCertificates")}</p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Courses List */}
         <Card>

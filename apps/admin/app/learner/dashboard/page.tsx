@@ -28,6 +28,7 @@ export default async function LearnerDashboardPage() {
       enrolled_at,
       courses(
         *,
+        certificate_enabled,
         lessons(count),
         profiles!courses_trainer_id_fkey(full_name)
       )
@@ -160,11 +161,18 @@ export default async function LearnerDashboardPage() {
           <CardContent>
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm text-muted-foreground">Install Ademy on your phone for quick access.</p>
-              <Link href="/pwa/install">
-                <Button variant="outline" className="w-full sm:w-auto">
-                  Install on your phone
-                </Button>
-              </Link>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <Link href="/pwa/install">
+                  <Button variant="outline" className="w-full sm:w-auto">
+                    Install on your phone
+                  </Button>
+                </Link>
+                <Link href="/learner/certificates">
+                  <Button variant="outline" className="w-full sm:w-auto">
+                    Download certificates
+                  </Button>
+                </Link>
+              </div>
             </div>
             {enrollmentsWithProgress && enrollmentsWithProgress.length > 0 ? (
               <div className="space-y-4">
@@ -173,8 +181,10 @@ export default async function LearnerDashboardPage() {
                   if (!course) return null
 
                   return (
-                    <Link key={enrollment.id} href={`/learner/courses/${course.id}`}>
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer">
+                    <div
+                      key={enrollment.id}
+                      className="flex flex-col gap-4 sm:flex-row sm:items-start border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+                    >
                         <div className="aspect-video w-full sm:w-48 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-lg flex items-center justify-center flex-shrink-0">
                           <BookOpen className="h-12 w-12 text-primary/40" />
                         </div>
@@ -185,7 +195,7 @@ export default async function LearnerDashboardPage() {
                             {course.description || "No description"}
                           </p>
 
-                        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mb-3">
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground mb-3">
                             <span>{course.profiles?.full_name || "Anonymous"}</span>
                             <span>•</span>
                             <span>{course.lessons?.[0]?.count || 0} lessons</span>
@@ -200,11 +210,21 @@ export default async function LearnerDashboardPage() {
                           </div>
                         </div>
 
-                        <Button variant="outline" className="w-full sm:w-auto">
-                          {enrollment.progress === 0 ? "Start Course" : "Continue"}
-                        </Button>
-                      </div>
-                    </Link>
+                        <div className="flex w-full flex-col gap-2 sm:w-auto">
+                          {enrollment.progress === 100 && course.certificate_enabled ? (
+                            <Link href={`/learner/courses/${course.id}/certificate`}>
+                              <Button variant="secondary" className="w-full sm:w-auto">
+                                Certificate
+                              </Button>
+                            </Link>
+                          ) : null}
+                          <Link href={`/learner/courses/${course.id}`}>
+                            <Button variant="outline" className="w-full sm:w-auto">
+                              {enrollment.progress === 0 ? "Start Course" : "Continue"}
+                            </Button>
+                          </Link>
+                        </div>
+                    </div>
                   )
                 })}
               </div>
